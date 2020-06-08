@@ -41,6 +41,7 @@ app.get('/location', (request, response) => {
     let returnObj = new Location(search_query, geoData[0]);
 
     console.log(returnObj);
+    // lines 45-50 commented
     // let returnObj = {
     //   search_query: search_query,
     //   formatted_query: geoData[0].display_name,
