@@ -40,15 +40,6 @@ app.get('/location', (request, response) => {
 
     let returnObj = new Location(search_query, geoData[0]);
 
-    console.log(returnObj);
-    // lines 45-50 commented
-    // let returnObj = {
-    //   search_query: search_query,
-    //   formatted_query: geoData[0].display_name,
-    //   latitude: geoData[0].lat,
-    //   longitude: geoData[0].lon
-    // }
-
     response.status(200).send(returnObj);
 
   } catch (err) {
@@ -65,11 +56,34 @@ function Location(searchQuery, obj) {
   this.longitude = obj.lon;
 }
 
+
+// turn on the lights - move into the house - start the server
+
+app.get('/weather', (request, response) => {
+  try {
+    let weatherArray = [];
+    let geoData = require('./data/weather.json')
+    geoData.data.forEach(element => {
+      new Weather(element, weatherArray);
+    })
+    response.status(200).send(weatherArray);
+
+  } catch (err) {
+    console.log('ERROR', err);
+    response.status(500).send('sorry, we messed up');
+  }
+
+})
+
+function Weather(obj, array) {
+  this.forecast = obj.weather.description;
+  this.time = obj.valid_date;
+  array.push(this)
+}
 app.get('*', (request, response) => {
   response.status(404).send('sorry, this route does not exist');
 })
 
-// turn on the lights - move into the house - start the server
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
 });
