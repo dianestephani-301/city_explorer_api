@@ -61,10 +61,9 @@ function Location(searchQuery, obj) {
 
 app.get('/weather', (request, response) => {
   try {
-    let weatherArray = [];
     let geoData = require('./data/weather.json')
-    geoData.data.forEach(element => {
-      new Weather(element, weatherArray);
+    let weatherArray = geoData.data.map(element => {
+      return new Weather(element);
     })
     response.status(200).send(weatherArray);
 
@@ -75,10 +74,10 @@ app.get('/weather', (request, response) => {
 
 })
 
-function Weather(obj, array) {
+function Weather(obj) {
   this.forecast = obj.weather.description;
   this.time = obj.valid_date;
-  array.push(this)
+  // array.push(this)
 }
 app.get('*', (request, response) => {
   response.status(404).send('sorry, this route does not exist');
