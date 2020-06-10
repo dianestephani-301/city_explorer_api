@@ -13,7 +13,6 @@ const cors = require('cors');
 app.use(cors());
 
 const superagent = require('superagent');
-app.use(superagent());
 
 
 // bring in the PORT by using process.env.variable name
@@ -44,6 +43,7 @@ app.get('/location', (request, response) => {
       .then(resultsFromSuperAgent => {
         let finalObj = new Location(city, resultsFromSuperAgent.body[0]);
         response.status(200).send(finalObj);
+        console.log(Location);
       })
   }
 
