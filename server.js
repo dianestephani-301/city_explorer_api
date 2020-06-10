@@ -12,6 +12,8 @@ require('dotenv').config();
 const cors = require('cors');
 app.use(cors());
 
+const superagent = require('superagent');
+
 
 // bring in the PORT by using process.env.variable name
 const PORT = process.env.PORT || 3001;
@@ -30,24 +32,30 @@ const PORT = process.env.PORT || 3001;
 //   response.status(200).send('I am on the pizza route');
 // });
 
+// Diane's code (not working with nodemon)
 app.get('/location', (request, response) => {
   try {
     // query: { city: 'seattle' },
-    console.log(request.query.city);
-    let search_query = request.query.city;
+    let city = request.query.city;
+    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
 
-    let geoData = require('./data/location.json');
+    superagent.get(url)
+      .then(resultsFromSuperAgent => {
+        let finalObj = new Location(city, resultsFromSuperAgent.body[0]);
+        response.status(200).send(finalObj);
+        console.log(Location);
+      })
+  }
 
-    let returnObj = new Location(search_query, geoData[0]);
-
-    response.status(200).send(returnObj);
-
-  } catch (err) {
+  catch (err) {
     console.log('ERROR', err);
     response.status(500).send('sorry, we messed up');
   }
+});
 
-})
+// // let search_query = request.query.city;
+// // let geoData = require('./data/location.json');
+// // let finalObj = new Location(search_query, geoData[0]);
 
 function Location(searchQuery, obj) {
   this.search_query = searchQuery;
@@ -55,6 +63,8 @@ function Location(searchQuery, obj) {
   this.latitude = obj.lat;
   this.longitude = obj.lon;
 }
+
+
 
 
 // turn on the lights - move into the house - start the server
