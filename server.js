@@ -71,24 +71,69 @@ function Location(searchQuery, obj) {
 
 app.get('/weather', (request, response) => {
   try {
-    let geoData = require('./data/weather.json')
-    let weatherArray = geoData.data.map(element => {
-      return new Weather(element);
-    })
-    response.status(200).send(weatherArray);
+    // let geoData = require('./data/weather.json')
+    // let weatherArray = geoData.data.map(element => {
+    //   return new Weather(element);
+    let city = request.query.search_query;
+    // let weatherUrl = `https://api.weatherbit.io/v2.0/current?city=${city}=${process.env.WEATHER_API_KEY}`;
+    let weatherUrl = `https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&key=${process.env.WEATHER_API_KEY}`;
 
-  } catch (err) {
+    superagent.get(weatherUrl)
+      .then(resultsFromSuperAgent => {
+        let weatherArr = resultsFromSuperAgent.body.data.map(element => new Weather (element));
+        response.status(200).send(weatherArr);
+        console.log(weatherArr)
+      }
+      )
+  }
+
+  catch (err) {
     console.log('ERROR', err);
     response.status(500).send('sorry, we messed up');
   }
+});
 
-})
 
 function Weather(obj) {
   this.forecast = obj.weather.description;
   this.time = obj.valid_date;
   // array.push(this)
 }
+
+app.get('/trails', (request, response) => {
+  try {
+    let location = [request.query.latitude, request.query.longitude];
+    let trailsUrl = `https://www.hikingproject.com/data/get-trails?lat=${location[0]}&lon=${location[1]}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
+
+    superagent.get(trailsUrl)
+      .then(resultsFromSuperAgent => {
+        let trailsArr = resultsFromSuperAgent.body.trails.map(element => new Trails (element));
+        response.status(200).send(trailsArr);
+        console.log(trailsArr)
+      }
+      )
+  }
+
+  catch (err) {
+    console.log('ERROR', err);
+    response.status(500).send('sorry, we messed up');
+  }
+});
+
+function Trails (obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length = obj.length;
+  this.starts = obj.starts;
+  this.star_votes = obj.starVotes;
+  this.summary = obj.summary;
+  this.trail_url = obj.url;
+  this.conditions = `${obj.conditionDetails || ''} ${obj.conditionStatus}`;
+  this.condition_date = obj.conditionDate.slice(0, 10);
+  this.condition_time = obj.conditionDate.slice(11, 18);
+}
+
+
 app.get('*', (request, response) => {
   response.status(404).send('sorry, this route does not exist');
 })
@@ -96,3 +141,4 @@ app.get('*', (request, response) => {
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
 });
+
