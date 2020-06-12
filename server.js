@@ -134,6 +134,61 @@ function Trails(obj) {
   this.condition_time = obj.conditionDate.slice(11, 18);
 }
 
+app.get('/movies', (request, response) => {
+  try {
+    let city = request.query.search_query;
+    let movieUrl = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&query=${city}`;
+
+    superagent.get(movieUrl)
+      .then(resultsFromSuperAgent => {
+        let moviesArr = resultsFromSuperAgent.body.results.map(element => new Movies(element));
+        response.status(200).send(moviesArr);
+        console.log(moviesArr);
+      })
+  } catch (err) {
+    console.log('ERROR', err);
+    response.status(500).send('Sorry, we messed up');
+  }
+});
+
+function Movies(obj) {
+  this.title = obj.original_title;
+  this.city = obj.location;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = obj.poster_path;
+  this.popularity = obj.popularity;
+  this.released_on = obj.release_date;
+}
+
+app.get('/yelp', (request, response) => {
+  try {
+    let city = [request.query.latitude, request.query.longitude];
+    let yelpUrl = `https://api.yelp.com/v3/businesses/search?latitude=${city[0]}&longitude=${city[1]}&categories=restaurants`;
+
+    superagent.get(yelpUrl)
+      .set({
+        Authorization: `Bearer ${process.env.YELP_API_KEY}`
+      })
+      .then(resultsFromSuperAgent => {
+        let yelpArr = resultsFromSuperAgent.body.businesses.map(element => new Yelp(element));
+        response.status(200).send(yelpArr);
+        console.log(yelpArr);
+      })
+  } catch (err) {
+    console.log('ERROR', err);
+    response.status(500).send('Sorry, we messed up');
+  }
+});
+
+function Yelp(obj) {
+  this.name = obj.name;
+  this.image_url = obj.image_url;
+  this.price = obj.price;
+  this.rating = obj.rating;
+  this.url = obj.url;
+}
 
 app.get('*', (request, response) => {
   response.status(404).send('sorry, this route does not exist');
